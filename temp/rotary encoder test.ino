@@ -1,10 +1,10 @@
 //  from https://t.ly/G4aEZ
-
+#include <M5Atom.h>
 #include "AiEsp32RotaryEncoder.h"
 
-#define ROTARY_ENCODER_A_PIN 32
-#define ROTARY_ENCODER_B_PIN 33
-#define ROTARY_ENCODER_BUTTON_PIN 35
+#define ROTARY_ENCODER_A_PIN 21
+#define ROTARY_ENCODER_B_PIN 25
+#define ROTARY_ENCODER_BUTTON_PIN 19
 
 #define ROTARY_ENCODER_STEPS 4
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
