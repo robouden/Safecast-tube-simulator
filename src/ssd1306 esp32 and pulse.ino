@@ -4,8 +4,8 @@
 
 #include "AiEsp32RotaryEncoder.h"
 
-#define ROTARY_ENCODER_A_PIN 21
-#define ROTARY_ENCODER_B_PIN 25
+#define ROTARY_ENCODER_A_PIN 25
+#define ROTARY_ENCODER_B_PIN 21
 #define ROTARY_ENCODER_BUTTON_PIN 19
 
 #define ROTARY_ENCODER_STEPS 4
@@ -19,15 +19,18 @@ AiEsp32RotaryEncoder rotaryEncoder =
 #define SCREEN_HEIGHT1 32
 #define OLED_RESET -1
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire,
-                         OLED_RESET); //メイン
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void IRAM_ATTR readEncoderISR() { rotaryEncoder.readEncoder_ISR(); }
 
 char str[] = "Pulse generator V1.0";
-char str1[] = "button pressed";
-char str2[] = "button released";
+char str1[] = "pressed";
+char str2[] = "released";
+char datastring[100];
 bool clicked;
+int setcase = 0;
+long freq = 1000;
+int duty = 50;
 
 void setup() {
   Wire.begin(26, 32);
@@ -36,7 +39,7 @@ void setup() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0); //表示開始位置左上角（X,Y）
+  display.setCursor(0, 0); //（X,Y）
   display.println(str);
   display.display();
 
@@ -61,18 +64,26 @@ void setDisplay() {
   display.println(str);
 
   // display encoder data
-  display.setCursor(10, 20);
+  display.setCursor(5, 10);
+  display.print("encoder = ");
   display.println(rotaryEncoder.readEncoder());
 
+  // display status case
+  display.setCursor(5, 20);
+  display.print("case    = ");
+  display.println(setcase);
+
   // display status button
-  display.setCursor(10, 30);
-  if (clicked) {
-    display.println(str1);
-  }
-  if (!clicked) {
-    display.println(str2);
-  }
-  
+  // display.setCursor(5, 30);
+  // display.print("button  = ");
+  // clicked ? display.println(str2) : display.println(str1);
+
+  // display status button
+  display.setCursor(5, 30);
+
+  sprintf(datastring, "freq = %d  \n duty = %d", freq, duty);
+
+  display.println(datastring);
   // display the data
   display.display();
 }
@@ -80,6 +91,14 @@ void setDisplay() {
 void loop() {
   if (rotaryEncoder.isEncoderButtonClicked()) {
     clicked = !clicked;
+
+    // set case
+    setcase = setcase + 1;
+    if (setcase > 3)
+      setcase = 0;
+
+    // reset encoder value
+    rotaryEncoder.setEncoderValue(0);
     setDisplay();
   }
 
