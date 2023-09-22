@@ -1,6 +1,6 @@
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h> 
-#include <M5Atom.h>           
+#include <Adafruit_SSD1306.h>
+#include <M5Atom.h>
 
 #include "AiEsp32RotaryEncoder.h"
 
@@ -25,6 +25,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire,
 void IRAM_ATTR readEncoderISR() { rotaryEncoder.readEncoder_ISR(); }
 
 char str[] = "Pulse generator V1.0";
+char str1[] = "button pressed";
+char str2[] = "button released";
+bool clicked;
 
 void setup() {
   Wire.begin(26, 32);
@@ -51,24 +54,36 @@ void setup() {
   rotaryEncoder.setAcceleration(250);
 }
 
+void setDisplay() {
+  display.clearDisplay();
+  // display header
+  display.setCursor(0, 0);
+  display.println(str);
+
+  // display encoder data
+  display.setCursor(10, 20);
+  display.println(rotaryEncoder.readEncoder());
+
+  // display status button
+  display.setCursor(10, 30);
+  if (clicked) {
+    display.println(str1);
+  }
+  if (!clicked) {
+    display.println(str2);
+  }
+  
+  // display the data
+  display.display();
+}
+
 void loop() {
+  if (rotaryEncoder.isEncoderButtonClicked()) {
+    clicked = !clicked;
+    setDisplay();
+  }
 
   if (rotaryEncoder.encoderChanged()) {
-    Serial.println(rotaryEncoder.readEncoder());
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println(str);
-    display.setCursor(10, 20);
-    display.println(rotaryEncoder.readEncoder());
-    display.display();
-  }
-  if (rotaryEncoder.isEncoderButtonClicked()) {
-    Serial.println("button pressed");
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println(str);
-    display.setCursor(10, 20);
-    display.println("button pressed");
-    display.display();
+    setDisplay();
   }
 }
