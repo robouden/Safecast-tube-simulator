@@ -1,4 +1,4 @@
-#include <TimerOne.h>
+// #include <TimerOne.h>
 #include <Wire.h> 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -15,6 +15,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup()
 { 
+
+      Wire.begin(26, 32);
+    Serial.begin(9600);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   display.clearDisplay();
   pinMode(9, OUTPUT);
@@ -24,8 +27,8 @@ void setup()
 }
 void loop()
 {
-  Timer1.initialize(t); // period    
-  Timer1.pwm(9, k); // k - fill factor 0-1023. 
+  // Timer1.initialize(t); // period    
+  // Timer1.pwm(9, k); // k - fill factor 0-1023. 
   kn=digitalRead(7); 
   kn1=digitalRead(4); 
   kn2=digitalRead(2);
