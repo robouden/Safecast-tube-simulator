@@ -39,9 +39,7 @@ void setup() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0); //（X,Y）
-  display.println(str);
-  display.display();
+  setDisplay();
 
   // rotary setup
   pinMode(ROTARY_ENCODER_A_PIN, INPUT_PULLUP);
@@ -52,8 +50,8 @@ void setup() {
   rotaryEncoder.begin();
   rotaryEncoder.setup(readEncoderISR);
   rotaryEncoder.setBoundaries(
-      0, 1000, false); // minValue, maxValue, circleValues true|false (when max
-                       // go to min and vice versa)
+      -500, 500, false); // minValue, maxValue, circleValues true|false (when
+                         // max go to min and vice versa)
   rotaryEncoder.setAcceleration(250);
 }
 
@@ -74,14 +72,9 @@ void setDisplay() {
   display.println(setcase);
 
   // display status button
-  // display.setCursor(5, 30);
-  // display.print("button  = ");
-  // clicked ? display.println(str2) : display.println(str1);
-
-  // display status button
   display.setCursor(5, 30);
 
-  sprintf(datastring, "freq = %d  \n duty = %d", freq, duty);
+  sprintf(datastring, "freq    = %d  \n duty    = %d", freq, duty);
 
   display.println(datastring);
   // display the data
@@ -94,7 +87,7 @@ void loop() {
 
     // set case
     setcase = setcase + 1;
-    if (setcase > 3)
+    if (setcase > 1)
       setcase = 0;
 
     // reset encoder value
@@ -104,5 +97,17 @@ void loop() {
 
   if (rotaryEncoder.encoderChanged()) {
     setDisplay();
+
+    switch (setcase) {
+    case 0:
+      freq = freq + rotaryEncoder.readEncoder();
+      break;
+    case 1:
+      duty = duty + rotaryEncoder.readEncoder();
+      break;
+    default:
+      // statements
+      break;
+    }
   }
 }
