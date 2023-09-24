@@ -4,21 +4,55 @@
 
 #include "AiEsp32RotaryEncoder.h"
 
+// for rotary encoder
 #define ROTARY_ENCODER_A_PIN 25
 #define ROTARY_ENCODER_B_PIN 21
 #define ROTARY_ENCODER_BUTTON_PIN 19
 #define ROTARY_ENCODER_VCC_PIN -1
 #define ROTARY_ENCODER_STEPS 4
+// for OLED
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define SCREEN_HEIGHT1 32
+#define OLED_RESET -1
 
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
     ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN,
     ROTARY_ENCODER_VCC_PIN, ROTARY_ENCODER_STEPS);
 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+char str[] = "Pulse generator V1.0";
+char str1[] = "pressed";
+char str2[] = "released";
+char datastring[100];
+bool clicked;
+int setcase = 0;
+long freq = 1000;
+int duty = 50;
+
 unsigned long shortPressAfterMiliseconds = 50;
 unsigned long longPressAfterMiliseconds = 300;
 
-void on_button_short_click() { Serial.println("button SHORT press "); }
-void on_button_long_click() { Serial.println("button LONG press "); }
+void on_button_short_click() {
+  clicked = !clicked;
+
+  // set case
+  setcase = setcase + 1;
+  if (setcase > 1)
+    setcase = 0;
+
+  // reset encoder value
+  rotaryEncoder.setEncoderValue(0);
+  setDisplay();
+}
+
+void on_button_long_click() {
+  // reset freq and duty 
+  freq = 0;
+  duty = 0;
+  setDisplay();
+}
 
 void handle_rotary_button() {
   static unsigned long lastTimeButtonDown = 0;
@@ -43,24 +77,6 @@ void handle_rotary_button() {
 }
 
 void IRAM_ATTR readEncoderISR() { rotaryEncoder.readEncoder_ISR(); }
-
-// OLED設定
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define SCREEN_HEIGHT1 32
-#define OLED_RESET -1
-
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-char str[] = "Pulse generator V1.0";
-char str1[] = "pressed";
-char str2[] = "released";
-char datastring[100];
-bool clicked;
-int setcase = 0;
-long freq = 1000;
-int duty = 50;
 
 void setup() {
   Wire.begin(26, 32);
@@ -112,20 +128,6 @@ void setDisplay() {
 void loop() {
   // long short press button control
   handle_rotary_button();
-
-  // rotary and click control
-  if (rotaryEncoder.isEncoderButtonClicked()) {
-    clicked = !clicked;
-
-    // set case
-    setcase = setcase + 1;
-    if (setcase > 1)
-      setcase = 0;
-
-    // reset encoder value
-    rotaryEncoder.setEncoderValue(0);
-    setDisplay();
-  }
 
   if (rotaryEncoder.encoderChanged()) {
 
