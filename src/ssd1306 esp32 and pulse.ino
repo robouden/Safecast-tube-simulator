@@ -7,21 +7,51 @@
 #define ROTARY_ENCODER_A_PIN 25
 #define ROTARY_ENCODER_B_PIN 21
 #define ROTARY_ENCODER_BUTTON_PIN 19
-
+#define ROTARY_ENCODER_VCC_PIN -1
 #define ROTARY_ENCODER_STEPS 4
-AiEsp32RotaryEncoder rotaryEncoder =
-    AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN,
-                         ROTARY_ENCODER_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+
+AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
+    ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN,
+    ROTARY_ENCODER_VCC_PIN, ROTARY_ENCODER_STEPS);
+
+unsigned long shortPressAfterMiliseconds = 50;
+unsigned long longPressAfterMiliseconds = 300;
+
+void on_button_short_click() { Serial.println("button SHORT press "); }
+void on_button_long_click() { Serial.println("button LONG press "); }
+
+void handle_rotary_button() {
+  static unsigned long lastTimeButtonDown = 0;
+  static bool wasButtonDown = false;
+  bool isEncoderButtonDown = rotaryEncoder.isEncoderButtonDown();
+  if (isEncoderButtonDown) {
+    if (!wasButtonDown) {
+      lastTimeButtonDown = millis();
+    }
+    wasButtonDown = true;
+    return;
+  }
+
+  if (wasButtonDown) {
+    if (millis() - lastTimeButtonDown >= longPressAfterMiliseconds) {
+      on_button_long_click();
+    } else if (millis() - lastTimeButtonDown >= shortPressAfterMiliseconds) {
+      on_button_short_click();
+    }
+  }
+  wasButtonDown = false;
+}
+
+void IRAM_ATTR readEncoderISR() { rotaryEncoder.readEncoder_ISR(); }
 
 // OLED設定
+
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define SCREEN_HEIGHT1 32
 #define OLED_RESET -1
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-void IRAM_ATTR readEncoderISR() { rotaryEncoder.readEncoder_ISR(); }
 
 char str[] = "Pulse generator V1.0";
 char str1[] = "pressed";
@@ -61,27 +91,29 @@ void setDisplay() {
   display.setCursor(0, 0);
   display.println(str);
 
-  // display encoder data
-  display.setCursor(5, 10);
-  display.print("encoder = ");
-  display.println(rotaryEncoder.readEncoder());
+  // display feq
+  display.setCursor(8, 8);
+  display.print("freq    = ");
+  display.println(freq);
 
-  // display status case
-  display.setCursor(5, 20);
-  display.print("case    = ");
-  display.println(setcase);
+  // display duty
+  display.setCursor(8, 16);
+  display.print("duty    = ");
+  display.println(duty);
 
-  // display status button
-  display.setCursor(5, 30);
+  // display line for point what value will be changed
+  display.setCursor(0, 8 + (setcase * 8));
+  display.print("-");
 
-  sprintf(datastring, "freq    = %d  \n duty    = %d", freq, duty);
-
-  display.println(datastring);
   // display the data
   display.display();
 }
 
 void loop() {
+  // long short press button control
+  handle_rotary_button();
+
+  // rotary and click control
   if (rotaryEncoder.isEncoderButtonClicked()) {
     clicked = !clicked;
 
@@ -96,7 +128,6 @@ void loop() {
   }
 
   if (rotaryEncoder.encoderChanged()) {
-    setDisplay();
 
     switch (setcase) {
     case 0:
@@ -109,5 +140,7 @@ void loop() {
       // statements
       break;
     }
+
+    setDisplay();
   }
 }
