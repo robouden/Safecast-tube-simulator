@@ -1,3 +1,4 @@
+#include "driver/ledc.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <M5Atom.h>
@@ -16,23 +17,58 @@
 #define SCREEN_HEIGHT1 32
 #define OLED_RESET -1
 
+// encoder setup
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
     ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN,
     ROTARY_ENCODER_VCC_PIN, ROTARY_ENCODER_STEPS);
-
+// display setup
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
+// var setup for display and rotary
 char str[] = "Pulse generator V1.0";
 char str1[] = "pressed";
 char str2[] = "released";
 char datastring[100];
 bool clicked;
 int setcase = 0;
-long freq = 1000;
+// long freq = 1000;
 int duty = 50;
 
 unsigned long shortPressAfterMiliseconds = 50;
 unsigned long longPressAfterMiliseconds = 300;
+
+#define VERSION "0.98"
+
+// setting PWM properties (needs to to be checked 2023-09-28)
+unsigned int freq_base = 1;
+unsigned int freq = 1;
+unsigned int freq_min = 100;
+unsigned int freq_max = 39000000;
+unsigned int freq_rough = 1;
+unsigned int freq_fine = 1;
+unsigned int freq_superfine = 1;
+
+int PWMChannel = 0;
+int resolution = 1;
+int dutyCycle = 1;
+int duty_max = 16;
+int resolution_max = 16;
+
+unsigned int pot_Freq_Rough_Read;
+unsigned int pot_Freq_Rough_Read_old;
+unsigned int pot_Freq_Fine_Read;
+unsigned int pot_Freq_Fine_Read_old;
+unsigned int pot_DutyCycle_Read;
+unsigned int pot_DutyCycle_Read_old;
+
+int PWM_Pin = 33; // outpin for driver
+int pot_Freq_Rough_pin = 39;
+int pot_Freq_Fine_pin = 32;
+int pot_Freq_SuperFine_pin = 36;
+int pot_Resolution_pin = 34;
+int pot_DutyCycle_pin = 35;
+int feedback1_pin = 12; // reads voltage from first coil
+int feedback2_pin = 14; // reads voltage from end coil
+// end ----------setting PWM properties (needs to to be checked 2023-09-28)
 
 void on_button_short_click() {
   clicked = !clicked;
@@ -48,7 +84,7 @@ void on_button_short_click() {
 }
 
 void on_button_long_click() {
-  // reset freq and duty 
+  // reset freq and duty
   freq = 0;
   duty = 0;
   setDisplay();
