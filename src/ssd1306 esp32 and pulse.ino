@@ -16,6 +16,8 @@
 #define SCREEN_HEIGHT 64
 #define SCREEN_HEIGHT1 32
 #define OLED_RESET -1
+// #define VERSION "0.98"
+
 
 // encoder setup
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
@@ -36,7 +38,6 @@ int duty = 50;
 unsigned long shortPressAfterMiliseconds = 50;
 unsigned long longPressAfterMiliseconds = 300;
 
-#define VERSION "0.98"
 
 // setting PWM properties (needs to to be checked 2023-09-28)
 unsigned int freq_base = 1;
@@ -135,6 +136,21 @@ void setup() {
       -500, 500, false); // minValue, maxValue, circleValues true|false (when
                          // max go to min and vice versa)
   rotaryEncoder.setAcceleration(250);
+
+
+  //Setup PWM parameters
+  ledcSetup(PWMChannel, freq, resolution);
+  ledcAttachPin(PWM_Pin, PWMChannel);
+  ledcWrite(PWMChannel, dutyCycle);
+
+  //add frequency and frequency rough and fine
+  unsigned int freq=freq_fine+freq_rough+freq_superfine;
+
+  //Display startup serial info
+    Serial.println("start setup");
+    Serial.printf("Duty = %d  Resolution= %d Freqency = %d HZ \n", (int)dutyCycle,(int)resolution,freq);
+    Serial.println(str);
+
 }
 
 void setDisplay() {
