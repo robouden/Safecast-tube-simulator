@@ -155,19 +155,16 @@ void setDisplay() {
   // display header
   display.setCursor(0, 0);
   display.println(str);
-  Serial.println(str);
 
   // display feq
   display.setCursor(8, 8);
   display.print("freq    = ");
   display.println(freq);
-  Serial.println(freq);
 
   // display duty
   display.setCursor(8, 16);
   display.print("duty    = ");
   display.println(duty);
-  Serial.println(duty);
 
   // display line for point what value will be changed
   display.setCursor(0, 8 + (setcase * 8));
@@ -175,6 +172,8 @@ void setDisplay() {
 
   // display the data
   display.display();
+  Serial.printf("Duty = %d  Resolution= %d Frequency = %d HZ \n", (int)duty,
+                (int)resolution, freq);
 }
 
 void loop() {
@@ -186,9 +185,37 @@ void loop() {
     switch (setcase) {
     case 0:
       freq = freq + rotaryEncoder.readEncoder();
+
+      // error trap invalid frequencies
+      if ((freq_min <= freq) & (freq <= freq_max)) {
+        ;
+        // Write new data to controller
+        ledcSetup(PWMChannel, freq, resolution);
+        ledcWrite(PWMChannel, dutyCycle);
+        ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, freq);
+      } else {
+        Serial.printf("Freq is out of range freq_rough=%d  freq_fine= %d "
+                      "freq_super_fine= %d \n",
+                      freq_rough, freq_fine, freq_superfine);
+        delay(1000);
+      }
       break;
     case 1:
       duty = duty + rotaryEncoder.readEncoder();
+
+      // error trap invalid frequencies
+      if ((freq_min <= freq) & (freq <= freq_max)) {
+        ;
+        // Write new data to controller
+        ledcSetup(PWMChannel, freq, resolution);
+        ledcWrite(PWMChannel, dutyCycle);
+        ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, freq);
+      } else {
+        Serial.printf("Freq is out of range freq_rough=%d  freq_fine= %d "
+                      "freq_super_fine= %d \n",
+                      freq_rough, freq_fine, freq_superfine);
+        delay(1000);
+      }
       break;
     default:
       // statements
