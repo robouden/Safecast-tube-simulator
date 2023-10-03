@@ -18,7 +18,6 @@
 #define OLED_RESET -1
 // #define VERSION "0.98"
 
-
 // encoder setup
 AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
     ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN,
@@ -26,7 +25,7 @@ AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
 // display setup
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // var setup for display and rotary
-char str[] = "Pulse generator V1.0";
+char str[] = "Pulse generator V1.1";
 char str1[] = "pressed";
 char str2[] = "released";
 char datastring[100];
@@ -37,7 +36,6 @@ int duty = 50;
 
 unsigned long shortPressAfterMiliseconds = 50;
 unsigned long longPressAfterMiliseconds = 300;
-
 
 // setting PWM properties (needs to to be checked 2023-09-28)
 unsigned int freq_base = 1;
@@ -137,20 +135,19 @@ void setup() {
                          // max go to min and vice versa)
   rotaryEncoder.setAcceleration(250);
 
-
-  //Setup PWM parameters
+  // Setup PWM parameters
   ledcSetup(PWMChannel, freq, resolution);
   ledcAttachPin(PWM_Pin, PWMChannel);
   ledcWrite(PWMChannel, dutyCycle);
 
-  //add frequency and frequency rough and fine
-  unsigned int freq=freq_fine+freq_rough+freq_superfine;
+  // add frequency and frequency rough and fine
+  unsigned int freq = freq_fine + freq_rough + freq_superfine;
 
-  //Display startup serial info
-    Serial.println("start setup");
-    Serial.printf("Duty = %d  Resolution= %d Freqency = %d HZ \n", (int)dutyCycle,(int)resolution,freq);
-    Serial.println(str);
-
+  // Display startup serial info
+  Serial.println("start setup");
+  Serial.printf("Duty = %d  Resolution= %d Freqency = %d HZ \n", (int)dutyCycle,
+                (int)resolution, freq);
+  Serial.println(str);
 }
 
 void setDisplay() {
@@ -158,16 +155,19 @@ void setDisplay() {
   // display header
   display.setCursor(0, 0);
   display.println(str);
+  Serial.println(str);
 
   // display feq
   display.setCursor(8, 8);
   display.print("freq    = ");
   display.println(freq);
+  Serial.println(freq);
 
   // display duty
   display.setCursor(8, 16);
   display.print("duty    = ");
   display.println(duty);
+  Serial.println(duty);
 
   // display line for point what value will be changed
   display.setCursor(0, 8 + (setcase * 8));
