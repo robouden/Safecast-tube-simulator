@@ -32,7 +32,7 @@ char datastring[100];
 bool clicked;
 int setcase = 0;
 // long freq = 1000;
-int duty = 50;
+signed int duty = 10;
 
 unsigned long shortPressAfterMiliseconds = 50;
 unsigned long longPressAfterMiliseconds = 300;
@@ -48,7 +48,7 @@ unsigned int freq_superfine = 1;
 
 int PWMChannel = 0;
 int resolution = 1;
-int dutyCycle = 1;
+signed int dutyCycle = 1;
 int duty_max = 16;
 int resolution_max = 16;
 
@@ -85,7 +85,7 @@ void on_button_short_click() {
 void on_button_long_click() {
   // reset freq and duty
   freq = 0;
-  duty = 0;
+  duty = 50;
   setDisplay();
 }
 
@@ -172,8 +172,8 @@ void setDisplay() {
 
   // display the data
   display.display();
-  Serial.printf("Duty = %d  Resolution= %d Frequency = %d HZ \n", (int)duty,
-                (int)resolution, freq);
+  // Serial.printf("Duty = %d  Resolution= %d Frequency = %d HZ \n", (int)duty,
+  //               (int)resolution, freq);
 }
 
 void loop() {
@@ -201,7 +201,11 @@ void loop() {
       }
       break;
     case 1:
-      duty = duty + rotaryEncoder.readEncoder();
+      if (duty >99){
+
+        duty=rotaryEncoder;
+      }
+      duty = duty + (rotaryEncoder.readEncoder())/10;
 
       // error trap invalid frequencies
       if ((freq_min <= freq) & (freq <= freq_max)) {
@@ -211,7 +215,7 @@ void loop() {
         ledcWrite(PWMChannel, dutyCycle);
         ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, freq);
       } else {
-        Serial.printf("Freq is out of range freq_rough=%d  freq_fine= %d "
+        Serial.printf("DutyCyle is out of range freq_rough=%d  freq_fine= %d "
                       "freq_super_fine= %d \n",
                       freq_rough, freq_fine, freq_superfine);
         delay(1000);
